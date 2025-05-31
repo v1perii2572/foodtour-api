@@ -93,7 +93,7 @@ namespace FoodTour.API.Controllers
 
             _context.SaveChanges();
 
-            return Redirect("http://localhost:5173/trang-ca-nhan");
+            return Redirect("https://foodtour-api.onrender.com/trang-ca-nhan");
         }
 
         [HttpPost("notify")]
