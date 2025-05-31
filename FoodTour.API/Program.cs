@@ -12,7 +12,7 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<FoodTourDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("MyCnn"));
 
 builder.Services.Configure<MomoSettings>(
     builder.Configuration.GetSection("MomoSettings"));
