@@ -1,4 +1,4 @@
-﻿using FoodTour.API.Data;
+using FoodTour.API.Data;
 using FoodTour.API.Models;
 using FoodTour.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,58 +11,19 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 💾 Database
 builder.Services.AddDbContext<FoodTourDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MyCnn")));
 
+// 🔐 Momo Settings
 builder.Services.Configure<MomoSettings>(
     builder.Configuration.GetSection("MomoSettings"));
 
-// Add services to the container.
-
+// 📦 Services
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient<CohereAIService>()
-    .AddTypedClient<CohereAIService>((http, sp) =>
-    {
-        var config = sp.GetRequiredService<IConfiguration>();
-        return new CohereAIService(http, config);
-    });
-builder.Services.AddHttpClient<GoogleGeocodingService>();
-builder.Services.AddHttpClient<WeatherService>();
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddTransient<MomoService>();
-builder.Services.AddHttpClient<PlaceController>();
-builder.Services.AddHttpClient();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-        };
-    });
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy
-            .WithOrigins("https://foodtour-fe.vercel.app")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
-
+// 🧠 Swagger (add only ONCE)
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -79,26 +40,73 @@ builder.Services.AddSwaggerGen(c =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
             },
             Array.Empty<string>()
         }
     });
 });
 
+// 🧠 Http Clients & Services
+builder.Services.AddHttpClient<CohereAIService>()
+    .AddTypedClient<CohereAIService>((http, sp) =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        return new CohereAIService(http, config);
+    });
+builder.Services.AddHttpClient<GoogleGeocodingService>();
+builder.Services.AddHttpClient<WeatherService>();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddTransient<MomoService>();
+builder.Services.AddHttpClient<PlaceController>();
+builder.Services.AddHttpClient();
+
+// 🔐 JWT Auth
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+// 🌐 CORS (Frontend Vercel domain)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins("https://foodtour-fe.vercel.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
+// ✅ Order matters: UseCors must be BEFORE Auth
 app.UseRouting();
 app.UseCors("AllowFrontend");
 
-// Configure the HTTP request pipeline.
+app.UseAuthentication();
+app.UseAuthorization();
+
+// 📑 Swagger UI
 app.UseSwagger();
 app.UseSwaggerUI();
 
-//app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
+// 🚫 Optional: disable HTTPS redirection if not needed
+// app.UseHttpsRedirection();
 
 app.MapControllers();
 
