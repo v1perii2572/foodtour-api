@@ -51,7 +51,7 @@ namespace FoodTour.API.Controllers
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
-                    StartedAt = DateTime.UtcNow,
+                    StartedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
                     Status = "InProgress"
                 };
                 _db.ChatSessions.Add(session);
@@ -69,7 +69,7 @@ namespace FoodTour.API.Controllers
                 SessionId = session.Id,
                 Role = "user",
                 Message = dto.Message,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
             };
             _db.ChatMessages.Add(userMsg);
             await _db.SaveChangesAsync();
@@ -144,7 +144,7 @@ namespace FoodTour.API.Controllers
                     SessionId = session.Id,
                     Role = "assistant",
                     Message = aiReplyNew,
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
                 };
                 _db.ChatMessages.Add(aiMsg);
                 await _db.SaveChangesAsync();
@@ -207,7 +207,7 @@ namespace FoodTour.API.Controllers
                     SessionId = session.Id,
                     Role = "assistant",
                     Message = aiReplyNew,
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
                 };
                 _db.ChatMessages.Add(aiMsg);
                 await _db.SaveChangesAsync();
@@ -253,7 +253,7 @@ namespace FoodTour.API.Controllers
                 UserId = userId,
                 Name = dto.CustomName ?? $"Lộ trình lúc {DateTime.Now:HH:mm:ss}",
                 Description = "Lưu từ phản hồi AI qua nút bấm",
-                SavedAt = DateTime.UtcNow
+                SavedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
             };
             _db.SavedRoutes.Add(route);
 
