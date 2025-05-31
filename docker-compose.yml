@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Your_password1234"
+      ACCEPT_EULA: "Y"
+
+  api:
+    build:
+      context: ./FoodTour.API
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MyCnn=Server=sqlserver,1433;Database=FoodTourDB;User Id=sa;Password=Your_password1234;TrustServerCertificate=true;
+    depends_on:
+      - sqlserver
