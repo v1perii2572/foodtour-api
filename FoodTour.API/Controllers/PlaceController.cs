@@ -10,7 +10,7 @@ using System.Collections.Generic;
 public class PlaceController : ControllerBase
 {
     private readonly HttpClient _httpClient;
-    private readonly string _googleApiKey = "AIzaSyCXs8s_xJixgYASMvv3zM4sBRommzip7jM";
+    private readonly string _googleApiKey = "AIzaSyCXs8s_xJixgYASMvv3zM4sBRommzip7jM111";
 
     public PlaceController(HttpClient httpClient)
     {
