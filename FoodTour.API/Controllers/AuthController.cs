@@ -31,7 +31,8 @@ namespace FoodTour.API.Controllers
                 Id = Guid.NewGuid(),
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = "Free"
+                Role = "Free",
+                Name = "User"
             };
 
             _db.Users.Add(user);
