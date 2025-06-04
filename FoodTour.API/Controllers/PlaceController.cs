@@ -10,7 +10,7 @@ using System.Collections.Generic;
 public class PlaceController : ControllerBase
 {
     private readonly HttpClient _httpClient;
-    private readonly string _googleApiKey = "AIzaSyCXs8s_xJixgYASMvv3zM4sBRommzip7jM111";
+    private readonly string _googleApiKey = "AlzaSyCMGZyxmnXGshwXNau8dp0hdXIIgGY7JMi";
 
     public PlaceController(HttpClient httpClient)
     {
@@ -23,7 +23,7 @@ public class PlaceController : ControllerBase
         if (string.IsNullOrEmpty(request.Input))
             return BadRequest("Input is required");
 
-        var findPlaceUrl = $"https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input={System.Net.WebUtility.UrlEncode(request.Input)}&inputtype=textquery&fields=place_id&key={_googleApiKey}";
+        var findPlaceUrl = $"https://maps.gomaps.pro/maps/api/place/findplacefromtext/json?input={System.Net.WebUtility.UrlEncode(request.Input)}&inputtype=textquery&fields=place_id&key={_googleApiKey}";
 
         var findPlaceResponse = await _httpClient.GetFromJsonAsync<FindPlaceResponse>(findPlaceUrl);
 
@@ -34,7 +34,7 @@ public class PlaceController : ControllerBase
 
         var placeId = findPlaceResponse.Candidates[0].PlaceId;
 
-        var detailsUrl = $"https://maps.googleapis.com/maps/api/place/details/json?place_id={placeId}&fields=name,rating,reviews,photos,formatted_address,formatted_phone_number,opening_hours,website,price_level,user_ratings_total,business_status,url&key={_googleApiKey}";
+        var detailsUrl = $"https://maps.gomaps.pro/maps/api/place/details/json?place_id={placeId}&fields=name,rating,reviews,photos,formatted_address,formatted_phone_number,opening_hours,website,price_level,user_ratings_total,business_status,url&key={_googleApiKey}";
 
         var detailsResponse = await _httpClient.GetFromJsonAsync<PlaceDetailsResponse>(detailsUrl);
 
@@ -64,7 +64,7 @@ public class PlaceController : ControllerBase
         if (string.IsNullOrEmpty(photoReference))
             return BadRequest("photoReference is required");
 
-        var url = $"https://maps.googleapis.com/maps/api/place/photo?maxwidth={maxWidth}&photoreference={photoReference}&key={_googleApiKey}";
+        var url = $"https://maps.gomaps.pro/maps/api/place/photo?maxwidth={maxWidth}&photoreference={photoReference}&key={_googleApiKey}";
 
         var response = await _httpClient.GetAsync(url);
 
