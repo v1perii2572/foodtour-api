@@ -86,7 +86,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("https://foodtour-fe.vercel.app")
+            .WithOrigins("https://eataround.vercel.app")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
