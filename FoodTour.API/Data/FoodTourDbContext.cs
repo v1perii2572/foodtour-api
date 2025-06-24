@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FoodTour.API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace FoodTour.API.Data
 {
@@ -23,6 +24,11 @@ namespace FoodTour.API.Data
         public virtual DbSet<SavedRoutePlace> SavedRoutePlaces { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public virtual DbSet<Post> Posts { get; set; }
+        public virtual DbSet<PostImage> PostImages { get; set; }
+        public virtual DbSet<PostComment> PostComments { get; set; }
+        public virtual DbSet<PostLike> PostLikes { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -157,6 +163,58 @@ namespace FoodTour.API.Data
                 entity.Property(e => e.Message).HasMaxLength(500);
                 entity.Property(e => e.OrderId).HasMaxLength(100);
                 entity.Property(e => e.RequestId).HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<Post>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt).HasColumnType("timestamptz");
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Posts)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<PostComment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt).HasColumnType("timestamptz");
+
+                entity.HasOne(e => e.Post)
+                    .WithMany(p => p.Comments)
+                    .HasForeignKey(e => e.PostId);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.PostComments)
+                    .HasForeignKey(e => e.UserId);
+            });
+
+            modelBuilder.Entity<PostLike>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LikedAt).HasColumnType("timestamptz");
+
+                entity.HasOne(e => e.Post)
+                    .WithMany(p => p.Likes)
+                    .HasForeignKey(e => e.PostId);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.PostLikes)
+                    .HasForeignKey(e => e.UserId);
+            });
+
+            modelBuilder.Entity<PostImage>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ImageUrl).HasMaxLength(500);
+
+                entity.HasOne(e => e.Post)
+                    .WithMany(p => p.Images)
+                    .HasForeignKey(e => e.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             OnModelCreatingPartial(modelBuilder);

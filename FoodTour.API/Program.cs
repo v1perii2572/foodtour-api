@@ -65,6 +65,11 @@ builder.Services.AddTransient<MomoService>();
 builder.Services.AddHttpClient<PlaceController>();
 builder.Services.AddHttpClient();
 
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
+builder.Services.AddScoped<CloudinaryService>();
+
 // 🔐 JWT Auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -91,6 +96,17 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowFrontend", policy =>
+//    {
+//        policy
+//            .WithOrigins("http://localhost:5173")
+//            .AllowAnyHeader()
+//            .AllowAnyMethod();
+//    });
+//});
 
 var app = builder.Build();
 

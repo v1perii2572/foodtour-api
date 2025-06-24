@@ -24,4 +24,8 @@ public partial class User
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
     public virtual ICollection<SavedRoute> SavedRoutes { get; set; } = new List<SavedRoute>();
+
+    public ICollection<Post> Posts { get; set; }
+    public ICollection<PostComment> PostComments { get; set; }
+    public ICollection<PostLike> PostLikes { get; set; }
 }

@@ -3,6 +3,7 @@ using System;
 using FoodTour.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodTour.API.Migrations
 {
     [DbContext(typeof(FoodTourDbContext))]
-    partial class FoodTourDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250624060600_UpdatePostSchema")]
+    partial class UpdatePostSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,7 +172,7 @@ namespace FoodTour.API.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamptz");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -193,7 +196,7 @@ namespace FoodTour.API.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamptz");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("PostId")
                         .HasColumnType("uuid");
@@ -238,7 +241,7 @@ namespace FoodTour.API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("LikedAt")
-                        .HasColumnType("timestamptz");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("PostId")
                         .HasColumnType("uuid");

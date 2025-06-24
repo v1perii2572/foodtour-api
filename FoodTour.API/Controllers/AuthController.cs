@@ -54,6 +54,7 @@ namespace FoodTour.API.Controllers
                 token = token,
                 user = new
                 {
+                    id = user.Id,   
                     name = user.Name,
                     email = user.Email
                 }
