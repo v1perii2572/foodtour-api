@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using FoodTour.API.Data;
 using FoodTour.API.DTOs;
 using FoodTour.API.Models;
-using FoodTour.API.Services;
 
 namespace FoodTour.API.Controllers
 {
@@ -41,14 +40,13 @@ namespace FoodTour.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts()
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts([FromQuery] Guid userId)
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
                 .Include(p => p.Images)
                 .Include(p => p.Likes)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.User)
+                .Include(p => p.Comments).ThenInclude(c => c.User)
                 .OrderByDescending(p => p.CreatedAt)
                 .Select(p => new PostDto
                 {
@@ -58,6 +56,7 @@ namespace FoodTour.API.Controllers
                     CreatedAt = p.CreatedAt,
                     ImageUrls = p.Images.Select(i => i.ImageUrl).ToList(),
                     LikeCount = p.Likes.Count,
+                    IsLiked = p.Likes.Any(l => l.UserId == userId),
                     Comments = p.Comments.Select(c => new CommentDto
                     {
                         UserName = c.User.Name,
@@ -71,22 +70,29 @@ namespace FoodTour.API.Controllers
         }
 
         [HttpPost("{id}/like")]
-        public async Task<IActionResult> LikePost(Guid id, [FromQuery] Guid userId)
+        public async Task<IActionResult> ToggleLike(Guid id, [FromQuery] Guid userId)
         {
-            var exists = await _context.PostLikes.AnyAsync(l => l.PostId == id && l.UserId == userId);
-            if (exists) return BadRequest("Already liked");
+            var existingLike = await _context.PostLikes.FirstOrDefaultAsync(l => l.PostId == id && l.UserId == userId);
 
-            var like = new PostLike
+            if (existingLike != null)
             {
-                Id = Guid.NewGuid(),
-                PostId = id,
-                UserId = userId,
-                LikedAt = DateTime.UtcNow
-            };
-
-            _context.PostLikes.Add(like);
-            await _context.SaveChangesAsync();
-            return Ok();
+                _context.PostLikes.Remove(existingLike);
+                await _context.SaveChangesAsync();
+                return Ok(new { liked = false });
+            }
+            else
+            {
+                var like = new PostLike
+                {
+                    Id = Guid.NewGuid(),
+                    PostId = id,
+                    UserId = userId,
+                    LikedAt = DateTime.UtcNow
+                };
+                _context.PostLikes.Add(like);
+                await _context.SaveChangesAsync();
+                return Ok(new { liked = true });
+            }
         }
 
         [HttpPost("{id}/comment")]
@@ -123,6 +129,7 @@ namespace FoodTour.API.Controllers
                     CreatedAt = p.CreatedAt,
                     ImageUrls = p.Images.Select(i => i.ImageUrl).ToList(),
                     LikeCount = p.Likes.Count,
+                    IsLiked = false,
                     Comments = p.Comments.Select(c => new CommentDto
                     {
                         UserName = c.User.Name,

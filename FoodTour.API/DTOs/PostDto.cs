@@ -9,4 +9,5 @@ public class PostDto
     public List<string> ImageUrls { get; set; }
     public int LikeCount { get; set; }
     public List<CommentDto> Comments { get; set; }
+    public bool IsLiked { get; set; }
 }
