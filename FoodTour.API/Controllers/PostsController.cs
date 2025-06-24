@@ -60,7 +60,7 @@ namespace FoodTour.API.Controllers
                     LikeCount = p.Likes.Count,
                     Comments = p.Comments.Select(c => new CommentDto
                     {
-                        UserEmail = c.User.Email,
+                        UserName = c.User.Name,
                         Content = c.Content,
                         CreatedAt = c.CreatedAt
                     }).ToList()
@@ -125,7 +125,7 @@ namespace FoodTour.API.Controllers
                     LikeCount = p.Likes.Count,
                     Comments = p.Comments.Select(c => new CommentDto
                     {
-                        UserEmail = c.User.Name,
+                        UserName = c.User.Name,
                         Content = c.Content,
                         CreatedAt = c.CreatedAt
                     }).ToList()
