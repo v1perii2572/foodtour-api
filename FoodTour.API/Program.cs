@@ -69,6 +69,7 @@ builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
 
 builder.Services.AddScoped<CloudinaryService>();
+builder.Services.AddHttpClient<GeminiService>();
 
 // 🔐 JWT Auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

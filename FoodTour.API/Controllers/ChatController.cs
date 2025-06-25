@@ -19,12 +19,14 @@ namespace FoodTour.API.Controllers
         private readonly FoodTourDbContext _db;
         private readonly CohereAIService _cohere;
         private readonly GoogleGeocodingService _geo;
+        private readonly GeminiService _gemini;
 
-        public ChatController(FoodTourDbContext db, CohereAIService cohere, GoogleGeocodingService geo)
+        public ChatController(FoodTourDbContext db, CohereAIService cohere, GoogleGeocodingService geo, GeminiService gemini)
         {
             _db = db;
             _cohere = cohere;
             _geo = geo;
+            _gemini = gemini;
         }
 
         private string ExtractTimeRange(string message)
@@ -137,7 +139,7 @@ namespace FoodTour.API.Controllers
                         promptBuilder.AppendLine($"AI: {msg.Message}");
                 }
 
-                var aiReplyNew = await _cohere.GetSuggestionAsync(promptBuilder.ToString());
+                var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
 
                 var aiMsg = new ChatMessage
                 {
@@ -200,7 +202,7 @@ namespace FoodTour.API.Controllers
                         promptBuilder.AppendLine($"AI: {msg.Message}");
                 }
 
-                var aiReplyNew = await _cohere.GetSuggestionAsync(promptBuilder.ToString());
+                var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
 
                 var aiMsg = new ChatMessage
                 {
