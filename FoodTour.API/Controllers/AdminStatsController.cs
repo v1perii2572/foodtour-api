@@ -206,7 +206,7 @@ public class AdminStatsController : ControllerBase
 
         var result = users
             .Where(u =>
-                u.ChatSessions.Any(s => s.ChatMessages.Count >= 3) ||  // chat thật
+                u.ChatSessions.Any(s => s.ChatMessages.Count >= 3) ||
                 u.SavedRoutes.Any() ||
                 u.Feedbacks.Any() ||
                 u.Posts.Any() || u.PostLikes.Any() || u.PostComments.Any() ||
