@@ -17,7 +17,7 @@ namespace FoodTour.API.Services
         public async Task<string> GetSuggestionAsync(string userPrompt)
         {
             var apiKey = _config["Gemini:ApiKey"];
-            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}";
+            var endpoint = $"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={apiKey}";
 
             var payload = new
             {
