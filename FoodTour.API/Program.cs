@@ -94,7 +94,8 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins("https://eataround.vercel.app")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
