@@ -81,163 +81,75 @@ namespace FoodTour.API.Controllers
                 .OrderBy(m => m.Timestamp)
                 .ToList();
 
-            var alreadySuggestedPlaces = _db.ChatMessages
-                .Where(m => m.SessionId == session.Id && m.Role == "assistant" && m.Message.Contains("<Tên quán>"))
-                .Select(m => m.Message)
-                .ToList();
-
-            var savedPlaces = await _db.SavedRoutePlaces
-                .Where(rp => rp.Route.UserId == userId)
-                .Select(rp => rp.Name)
-                .ToListAsync();
-
-            var allSuggestedPlaces = alreadySuggestedPlaces.Concat(savedPlaces).Distinct().ToList();
-
-            var dislikedFoods = new List<string>();
+            var disliked = new List<string>();
             foreach (var msg in history.Where(m => m.Role == "user"))
             {
                 var match = Regex.Match(msg.Message, @"không muốn ăn\s+(.+?)(\.|$)", RegexOptions.IgnoreCase);
-                if (match.Success) dislikedFoods.Add(match.Groups[1].Value.Trim());
+                if (match.Success) disliked.Add(match.Groups[1].Value.Trim());
             }
 
-            if (dto.Message.ToLower().Contains("lưu lộ trình"))
+            string userAddress = "Hà Nội";
+            try { userAddress = await _geo.ReverseGeocodeAsync(dto.Lat, dto.Lng); }
+            catch { }
+
+            var promptBuilder = new StringBuilder();
+            promptBuilder.AppendLine($"Tôi đang ở gần địa chỉ: {userAddress}.");
+            promptBuilder.AppendLine($"Tọa độ của tôi là lat {dto.Lat}, lng {dto.Lng}.");
+            promptBuilder.AppendLine("Vui lòng chỉ gợi ý các địa điểm ăn uống nằm trong vòng 5km quanh vị trí này.");
+
+            var timeRange = ExtractTimeRange(dto.Message);
+            if (!string.IsNullOrWhiteSpace(timeRange))
+                promptBuilder.AppendLine($"Bạn hãy gợi ý phù hợp cho {timeRange}.");
+
+            if (!string.IsNullOrWhiteSpace(dto.Mood))
+                promptBuilder.AppendLine($"Tôi đang muốn tìm món ăn cho dịp: {dto.Mood}.");
+
+            if (!string.IsNullOrWhiteSpace(dto.SpecificLocation))
+                promptBuilder.AppendLine($"Tôi muốn tập trung vào khu vực: {dto.SpecificLocation}.");
+
+            if (dto.Mode == "place")
             {
-                string aiReply;
-                var lastUserIndex = history.FindLastIndex(m => m.Role == "user" && m.Message.ToLower().Contains("lưu lộ trình"));
-
-                if (lastUserIndex > 0)
-                {
-                    aiReply = history
-                        .Take(lastUserIndex)
-                        .Reverse()
-                        .FirstOrDefault(m => m.Role == "assistant")?.Message ?? "";
-                }
-                else
-                {
-                    aiReply = history.LastOrDefault(m => m.Role == "assistant")?.Message ?? "";
-                }
-
-                if (string.IsNullOrWhiteSpace(aiReply))
-                    return BadRequest("Không có phản hồi AI gần nhất để phân tích.");
-
-                var allPlaces = AIResponseParser.ParseRouteFromAiResponse(aiReply);
-
-                var promptBuilder = new StringBuilder();
-                promptBuilder.AppendLine("Vui lòng gợi ý lộ trình ăn uống mới, tránh những quán đã được gợi ý gần đây trong cuộc trò chuyện này.");
-                promptBuilder.AppendLine("Nếu có thể, hãy hạn chế gợi ý những quán ăn đã được gợi ý hoặc lưu trong các lộ trình trước đó.");
-
-                if (dislikedFoods.Any())
-                {
-                    promptBuilder.AppendLine($"Người dùng không muốn ăn: {string.Join(", ", dislikedFoods)}. Vui lòng tránh các món này.");
-                }
-
-                foreach (var msg in history)
-                {
-                    if (msg.Role == "user")
-                        promptBuilder.AppendLine($"User: {msg.Message}");
-                    else
-                        promptBuilder.AppendLine($"AI: {msg.Message}");
-                }
-
-                string aiReplyNew;
-                try
-                {
-                    aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
-                }
-                catch (Exception ex)
-                {
-                    return StatusCode(500, $"❌ Lỗi từ Gemini: {ex.Message}");
-                }
-
-
-                var aiMsg = new ChatMessage
-                {
-                    SessionId = session.Id,
-                    Role = "assistant",
-                    Message = aiReplyNew,
-                    Timestamp = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
-                };
-                _db.ChatMessages.Add(aiMsg);
-                await _db.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    sessionId = session.Id,
-                    reply = aiReplyNew
-                });
+                promptBuilder.AppendLine("Chỉ gợi ý 1-2 quán ăn đơn lẻ. Trả lời ngắn gọn, bao gồm tên, địa chỉ, mô tả.");
             }
             else
             {
-                string userAddress = "Hà Nội";
-                try
-                {
-                    userAddress = await _geo.ReverseGeocodeAsync(dto.Lat, dto.Lng);
-                }
-                catch
-                {
-                    userAddress = "Hà Nội";
-                }
-
-                var promptBuilder = new StringBuilder();
-                promptBuilder.AppendLine($"Tôi đang ở gần địa chỉ: {userAddress}.");
-                promptBuilder.AppendLine($"Tọa độ của tôi là lat {dto.Lat}, lng {dto.Lng}.");
-                promptBuilder.AppendLine("Vui lòng chỉ gợi ý các địa điểm ăn uống nằm trong vòng 5km quanh vị trí này.");
-
-                var timeRange = ExtractTimeRange(dto.Message);
-                promptBuilder.AppendLine($"Bạn hãy gợi ý lộ trình ăn uống chỉ trong {timeRange}.");
+                promptBuilder.AppendLine("Gợi ý một lộ trình ăn uống với các địa điểm gần nhau.");
                 promptBuilder.AppendLine("Không gợi ý nhiều hơn 1 món chính, 1 món tráng miệng, hoặc 1 quán nước.");
                 promptBuilder.AppendLine("Bạn chỉ được phép trả lời theo định dạng sau:");
-                promptBuilder.AppendLine("Địa chỉ phải đầy đủ, bao gồm số nhà, tên phố, quận và thành phố Hà Nội. ví dụ: 29 Phố Hàng Than, Quận Ba Đình, Thành Phố Hà Nội");
                 promptBuilder.AppendLine("<số thứ tự>. <Giờ> - <Tên quán> (<Địa chỉ>) – <Vai trò> – <Ghi chú>");
-                promptBuilder.AppendLine("Không trả lời ngoài định dạng này.");
                 promptBuilder.AppendLine("Mỗi địa điểm trên một dòng, không có khoảng cách dòng giữa các địa điểm.");
-
-                var disliked = new List<string>();
-                foreach (var msg in history.Where(m => m.Role == "user"))
-                {
-                    var match = Regex.Match(msg.Message, @"không muốn ăn\s+(.+?)(\.|$)", RegexOptions.IgnoreCase);
-                    if (match.Success) disliked.Add(match.Groups[1].Value.Trim());
-                }
-                if (disliked.Any())
-                {
-                    promptBuilder.AppendLine($"Người dùng không muốn ăn: {string.Join(", ", disliked)}. Vui lòng không gợi ý các món này.");
-                }
-
-                foreach (var msg in history)
-                {
-                    if (msg.Role == "user")
-                        promptBuilder.AppendLine($"User: {msg.Message}");
-                    else
-                        promptBuilder.AppendLine($"AI: {msg.Message}");
-                }
-
-                string aiReplyNew;
-                try
-                {
-                    aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
-                }
-                catch (Exception ex)
-                {
-                    return StatusCode(500, $"❌ Lỗi từ Gemini: {ex.Message}");
-                }
-
-
-                var aiMsg = new ChatMessage
-                {
-                    SessionId = session.Id,
-                    Role = "assistant",
-                    Message = aiReplyNew,
-                    Timestamp = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
-                };
-                _db.ChatMessages.Add(aiMsg);
-                await _db.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    sessionId = session.Id,
-                    reply = aiReplyNew
-                });
             }
+
+            if (disliked.Any())
+            {
+                promptBuilder.AppendLine($"Người dùng không muốn ăn: {string.Join(", ", disliked)}.");
+            }
+
+            foreach (var msg in history)
+            {
+                if (msg.Role == "user")
+                    promptBuilder.AppendLine($"User: {msg.Message}");
+                else
+                    promptBuilder.AppendLine($"AI: {msg.Message}");
+            }
+
+            var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
+
+            var aiMsg = new ChatMessage
+            {
+                SessionId = session.Id,
+                Role = "assistant",
+                Message = aiReplyNew,
+                Timestamp = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
+            };
+            _db.ChatMessages.Add(aiMsg);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                sessionId = session.Id,
+                reply = aiReplyNew
+            });
         }
 
         [HttpPost("save-route")]
