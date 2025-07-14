@@ -139,7 +139,16 @@ namespace FoodTour.API.Controllers
                         promptBuilder.AppendLine($"AI: {msg.Message}");
                 }
 
-                var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
+                string aiReplyNew;
+                try
+                {
+                    aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"❌ Lỗi từ Gemini: {ex.Message}");
+                }
+
 
                 var aiMsg = new ChatMessage
                 {
@@ -202,7 +211,16 @@ namespace FoodTour.API.Controllers
                         promptBuilder.AppendLine($"AI: {msg.Message}");
                 }
 
-                var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
+                string aiReplyNew;
+                try
+                {
+                    aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"❌ Lỗi từ Gemini: {ex.Message}");
+                }
+
 
                 var aiMsg = new ChatMessage
                 {

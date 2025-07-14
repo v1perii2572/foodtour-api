@@ -44,13 +44,12 @@ namespace FoodTour.API.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Gemini API lỗi: {(int)response.StatusCode} - {response.ReasonPhrase}\n{responseText}");
+                throw new Exception($"Gemini status {(int)response.StatusCode}: {response.ReasonPhrase}\n{responseText}");
             }
 
             try
             {
                 var json = JsonDocument.Parse(responseText);
-
                 return json.RootElement
                            .GetProperty("candidates")[0]
                            .GetProperty("content")
@@ -60,7 +59,7 @@ namespace FoodTour.API.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"Gemini API trả về JSON không hợp lệ:\n{responseText}", ex);
+                throw new Exception("❌ Không đọc được phản hồi JSON từ Gemini:\n" + responseText, ex);
             }
         }
     }

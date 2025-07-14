@@ -99,17 +99,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowFrontend", policy =>
-//    {
-//        policy
-//            .WithOrigins("http://localhost:5173")
-//            .AllowAnyHeader()
-//            .AllowAnyMethod();
-//    });
-//});
-
 var app = builder.Build();
 
 // ✅ Order matters: UseCors must be BEFORE Auth
