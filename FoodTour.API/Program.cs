@@ -113,7 +113,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ✅ Order matters: UseCors must be BEFORE Auth
-app.UseRouting();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
