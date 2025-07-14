@@ -139,7 +139,7 @@ namespace FoodTour.API.Controllers
                         promptBuilder.AppendLine($"AI: {msg.Message}");
                 }
 
-                var aiReplyNew = await _cohere.GetSuggestionAsync(promptBuilder.ToString());
+                var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
 
                 var aiMsg = new ChatMessage
                 {
@@ -202,7 +202,7 @@ namespace FoodTour.API.Controllers
                         promptBuilder.AppendLine($"AI: {msg.Message}");
                 }
 
-                var aiReplyNew = await _cohere.GetSuggestionAsync(promptBuilder.ToString());
+                var aiReplyNew = await _gemini.GetSuggestionAsync(promptBuilder.ToString());
 
                 var aiMsg = new ChatMessage
                 {
