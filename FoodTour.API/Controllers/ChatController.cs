@@ -104,9 +104,6 @@ namespace FoodTour.API.Controllers
             if (!string.IsNullOrWhiteSpace(dto.Mood))
                 promptBuilder.AppendLine($"Tôi đang muốn tìm món ăn cho dịp: {dto.Mood}.");
 
-            if (!string.IsNullOrWhiteSpace(dto.SpecificLocation))
-                promptBuilder.AppendLine($"Tôi muốn tập trung vào khu vực: {dto.SpecificLocation}.");
-
             if (dto.Mode == "place")
             {
                 promptBuilder.AppendLine("Chỉ gợi ý 1-2 quán ăn đơn lẻ. Trả lời ngắn gọn, bao gồm tên, địa chỉ, mô tả.");

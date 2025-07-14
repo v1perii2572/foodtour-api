@@ -9,6 +9,5 @@ namespace FoodTour.API.DTOs
         public double Lng { get; set; }
         public string Mode { get; set; } = "route";
         public string? Mood { get; set; }
-        public string? SpecificLocation { get; set; }
     }
 }
