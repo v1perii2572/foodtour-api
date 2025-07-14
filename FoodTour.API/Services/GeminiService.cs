@@ -17,7 +17,7 @@ namespace FoodTour.API.Services
         public async Task<string> GetSuggestionAsync(string userPrompt)
         {
             var apiKey = _config["Gemini:ApiKey"];
-            var endpoint = $"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={apiKey}";
+            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
 
             var payload = new
             {
@@ -44,23 +44,17 @@ namespace FoodTour.API.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Gemini status {(int)response.StatusCode}: {response.ReasonPhrase}\n{responseText}");
+                throw new Exception($"Gemini API error {(int)response.StatusCode}: {responseText}");
             }
 
-            try
-            {
-                var json = JsonDocument.Parse(responseText);
-                return json.RootElement
-                           .GetProperty("candidates")[0]
-                           .GetProperty("content")
-                           .GetProperty("parts")[0]
-                           .GetProperty("text")
-                           .GetString()!;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("❌ Không đọc được phản hồi JSON từ Gemini:\n" + responseText, ex);
-            }
+            var json = JsonDocument.Parse(responseText);
+
+            return json.RootElement
+                       .GetProperty("candidates")[0]
+                       .GetProperty("content")
+                       .GetProperty("parts")[0]
+                       .GetProperty("text")
+                       .GetString()!;
         }
     }
 }
