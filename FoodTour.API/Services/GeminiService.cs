@@ -23,14 +23,14 @@ namespace FoodTour.API.Services
             {
                 contents = new[]
                 {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = userPrompt }
-                        }
-                    }
+            new
+            {
+                parts = new[]
+                {
+                    new { text = userPrompt }
                 }
+            }
+        }
             };
 
             var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
@@ -40,13 +40,28 @@ namespace FoodTour.API.Services
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var response = await _http.SendAsync(request);
-            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var responseText = await response.Content.ReadAsStringAsync();
 
-            return json.GetProperty("candidates")[0]
-                       .GetProperty("content")
-                       .GetProperty("parts")[0]
-                       .GetProperty("text")
-                       .GetString()!;
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Gemini API lỗi: {(int)response.StatusCode} - {response.ReasonPhrase}\n{responseText}");
+            }
+
+            try
+            {
+                var json = JsonDocument.Parse(responseText);
+
+                return json.RootElement
+                           .GetProperty("candidates")[0]
+                           .GetProperty("content")
+                           .GetProperty("parts")[0]
+                           .GetProperty("text")
+                           .GetString()!;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Gemini API trả về JSON không hợp lệ:\n{responseText}", ex);
+            }
         }
     }
 }
